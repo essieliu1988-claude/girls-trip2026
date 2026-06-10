@@ -541,7 +541,7 @@ function buildBudget(){
   document.getElementById('budget-total').textContent='¥'+grandTotal.toLocaleString();
 }
 function toggleBC(i){document.getElementById('bc-'+i).classList.toggle('open')}
-function toggleBgt(ci,ii){budgetChecked[ci][ii]=!budgetChecked[ci][ii];buildBudget()}
+function toggleBgt(ci,ii){budgetChecked[ci][ii]=!budgetChecked[ci][ii];saveState();buildBudget()}
 
 function renderXY(){
   var wrap=document.getElementById('xy-missions');wrap.innerHTML='';
@@ -556,12 +556,12 @@ function renderXY(){
     var card=document.createElement('div');card.className='mission-card';
     var rows;
     if(xyEdit){
-      rows=m.tasks.map(function(t,ti){return '<div class="mc-row"><input class="mc-edit-input" value="'+esc(t.t)+'" onchange="missions['+di+'].tasks['+ti+'].t=this.value"/><input class="mc-xp-input" type="number" min="5" max="50" step="5" value="'+t.xp+'" onchange="missions['+di+'].tasks['+ti+'].xp=parseInt(this.value)||10;renderXY()"/><button class="mc-del" onclick="missions['+di+'].tasks.splice('+ti+',1);xyChecked['+di+'].splice('+ti+',1);xyPhotos['+di+'].splice('+ti+',1);renderXY()">✕</button></div>'}).join('');
+      rows=m.tasks.map(function(t,ti){return '<div class="mc-row"><input class="mc-edit-input" value="'+esc(t.t)+'" onchange="missions['+di+'].tasks['+ti+'].t=this.value;saveState()"/><input class="mc-xp-input" type="number" min="5" max="50" step="5" value="'+t.xp+'" onchange="missions['+di+'].tasks['+ti+'].xp=parseInt(this.value)||10;saveState();renderXY()"/><button class="mc-del" onclick="missions['+di+'].tasks.splice('+ti+',1);xyChecked['+di+'].splice('+ti+',1);xyPhotos['+di+'].splice('+ti+',1);saveState();renderXY()">✕</button></div>'}).join('');
       rows+='<div class="mc-add"><input class="mc-edit-input" id="xya-'+di+'" placeholder="新增任務..."/><input class="mc-xp-input" id="xyax-'+di+'" type="number" min="5" max="50" step="5" value="10"/><button class="mc-add-btn" onclick="addXYTask('+di+')">＋ 新增</button></div>';
     } else {
       rows=m.tasks.map(function(t,ti){
         var isDone=xyChecked[di][ti];var hasPhoto=xyPhotos[di][ti];
-        return '<div class="mc-row"><div class="mc-cb'+(isDone?' done':'')+'" onclick="xyChecked['+di+']['+ti+']=!xyChecked['+di+']['+ti+'];renderXY()"></div><span class="mc-text'+(isDone?' done':'')+'">'+esc(t.t)+'</span><span class="mc-xp-sm">+'+t.xp+'</span>'+(hasPhoto?'<img class="mc-photo-preview" src="'+hasPhoto+'"/>':'<button class="mc-photo-btn" onclick="capturePhoto('+di+','+ti+')">📷</button>')+'</div>'
+        return '<div class="mc-row"><div class="mc-cb'+(isDone?' done':'')+'" onclick="xyChecked['+di+']['+ti+']=!xyChecked['+di+']['+ti+'];saveState();renderXY()"></div><span class="mc-text'+(isDone?' done':'')+'">'+esc(t.t)+'</span><span class="mc-xp-sm">+'+t.xp+'</span>'+(hasPhoto?'<img class="mc-photo-preview" src="'+hasPhoto+'"/>':'<button class="mc-photo-btn" onclick="capturePhoto('+di+','+ti+')">📷</button>')+'</div>'
       }).join('');
     }
     card.innerHTML='<div class="mc-header"><div class="mc-dot" style="background:'+m.dot+'"></div><span class="mc-date">'+m.date+'</span><span class="mc-place">'+m.place+'</span><span class="mc-xp">'+dayXP+' XP</span></div><div class="mc-prog"><div class="mc-prog-bar" style="width:'+pct+'%"></div></div><div class="mc-body">'+rows+'</div><div class="mc-unlock" id="xyu-'+di+'" style="display:'+(done===total&&total>0?'block':'none')+'">🎉 全部完成！今晚可以轉蛋一次！</div>';
@@ -575,13 +575,13 @@ function toggleXYEdit(){xyEdit=!xyEdit;document.getElementById('xy-edit-sw').cla
 function addXYTask(di){
   var t=document.getElementById('xya-'+di).value.trim();
   var x=parseInt(document.getElementById('xyax-'+di).value)||10;
-  if(!t)return;missions[di].tasks.push({t:t,xp:x});xyChecked[di].push(false);xyPhotos[di].push(null);renderXY();
+  if(!t)return;missions[di].tasks.push({t:t,xp:x});xyChecked[di].push(false);xyPhotos[di].push(null);saveState();renderXY();
 }
 function capturePhoto(di,ti){photoTarget={di:di,ti:ti};document.getElementById('photo-cap').click()}
 function handlePhoto(input){
   if(!input.files[0]||!photoTarget)return;
   var reader=new FileReader();
-  reader.onload=function(e){xyPhotos[photoTarget.di][photoTarget.ti]=e.target.result;photoTarget=null;renderXY()};
+  reader.onload=function(e){compressImage(e.target.result,function(img){xyPhotos[photoTarget.di][photoTarget.ti]=img;photoTarget=null;saveState();renderXY()})};
   reader.readAsDataURL(input.files[0]);input.value='';
 }
 
@@ -590,7 +590,7 @@ function buildStamps(){
   stamps.forEach(function(s,i){
     var el=document.createElement('div');
     el.className='stamp'+(stampState[i]?' collected':'');
-    el.onclick=function(){stampState[i]=!stampState[i];buildStamps();updateXF()};
+    el.onclick=function(){stampState[i]=!stampState[i];saveState();buildStamps();updateXF()};
     el.innerHTML='<div class="stamp-emoji">'+(stampState[i]?s.e:'❓')+'</div><div class="stamp-label">'+s.l+'</div>';
     g.appendChild(el);
   });
@@ -603,7 +603,7 @@ function renderXF(){
     var card=document.createElement('div');card.className='zhuyin-card';
     var rowsHTML=m.tasks.map(function(t,ti){
       var isDone=xfChecked[di][ti];
-      return '<div class="zhuyin-row"><div class="zhuyin-cb'+(isDone?' done':'')+'" onclick="xfChecked['+di+']['+ti+']=!xfChecked['+di+']['+ti+'];renderXF();updateXF()"></div><span class="zhuyin-text'+(isDone?' done':'')+'">'+t.t+'</span><span class="zhuyin-reward">'+'⭐'.repeat(t.xp)+'</span></div>'
+      return '<div class="zhuyin-row"><div class="zhuyin-cb'+(isDone?' done':'')+'" onclick="xfChecked['+di+']['+ti+']=!xfChecked['+di+']['+ti+'];saveState();renderXF();updateXF()"></div><span class="zhuyin-text'+(isDone?' done':'')+'">'+t.t+'</span><span class="zhuyin-reward">'+'⭐'.repeat(t.xp)+'</span></div>'
     }).join('');
     card.innerHTML='<div class="zhuyin-header"><span class="zhuyin-day">'+m.date+'</span><span class="zhuyin-place">'+m.place+'</span></div><div class="zhuyin-body">'+rowsHTML+'</div><div class="zhuyin-unlock" style="display:'+(done===total?'block':'none')+'">🌟 好棒！今天的任務全部完成了！獎勵轉蛋一次！</div>';
     wrap.appendChild(card);
@@ -760,7 +760,75 @@ function loadWeather() {
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
-buildHome();buildDays();buildBudget();loadWeather();renderXY();buildStamps();renderXF();updateXF();
+// ── Local save for GitHub Pages / same-device browser ──
+// This keeps task checks, edits, stamps, budget checks, and compressed photo previews
+// on the same phone/browser. It does NOT upload photos to GitHub or any cloud service.
+var STORAGE_KEY='japanTrip2026State_v1';
+
+function saveState(){
+  try{
+    var data={
+      missions:missions,
+      xyChecked:xyChecked,
+      xyPhotos:xyPhotos,
+      budgetChecked:budgetChecked,
+      stampState:stampState,
+      xfChecked:xfChecked
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }catch(e){
+    console.warn('saveState failed', e);
+    alert('照片或資料太大，瀏覽器暫存空間不夠。請先刪掉幾張照片或改用較小照片。');
+  }
+}
+
+function loadState(){
+  try{
+    var raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw)return;
+    var data=JSON.parse(raw);
+    if(data.missions)missions=data.missions;
+    if(data.xyChecked)xyChecked=data.xyChecked;
+    if(data.xyPhotos)xyPhotos=data.xyPhotos;
+    if(data.budgetChecked)budgetChecked=data.budgetChecked;
+    if(data.stampState)stampState=data.stampState;
+    if(data.xfChecked)xfChecked=data.xfChecked;
+  }catch(e){
+    console.warn('loadState failed', e);
+  }
+}
+
+function resetSavedState(){
+  if(confirm('確定要清除這台裝置上的任務、照片與勾選紀錄嗎？')){
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+}
+
+function compressImage(dataUrl, cb){
+  var img=new Image();
+  img.onload=function(){
+    var max=900;
+    var w=img.width,h=img.height;
+    if(w>h && w>max){h=Math.round(h*max/w);w=max;}
+    else if(h>=w && h>max){w=Math.round(w*max/h);h=max;}
+    var canvas=document.createElement('canvas');
+    canvas.width=w;canvas.height=h;
+    var ctx=canvas.getContext('2d');
+    ctx.drawImage(img,0,0,w,h);
+    cb(canvas.toDataURL('image/jpeg',0.72));
+  };
+  img.onerror=function(){cb(dataUrl)};
+  img.src=dataUrl;
+}
+
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState==='hidden')saveState();
+});
+window.addEventListener('beforeunload', saveState);
+
+
+loadState();buildHome();buildDays();buildBudget();loadWeather();renderXY();buildStamps();renderXF();updateXF();
 </script>
 </body>
 </html>
