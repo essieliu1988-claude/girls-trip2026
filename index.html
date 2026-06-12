@@ -192,12 +192,6 @@ input,textarea{font-family:inherit}
 .mc-photo-btn{background:var(--lav-light);border:none;border-radius:8px;padding:4px 8px;font-size:11px;color:var(--lav);display:flex;align-items:center;gap:3px;cursor:pointer}
 .mc-photo-btn:active{opacity:.7}
 .mc-photo-preview{width:40px;height:40px;border-radius:6px;object-fit:cover;border:1px solid var(--border)}
-.mc-photo-wrap{display:flex;align-items:center;gap:5px;flex-shrink:0}
-.mc-photo-mini{background:var(--lav-light);border:none;border-radius:7px;padding:4px 6px;font-size:10px;color:var(--lav);cursor:pointer;white-space:nowrap}
-.mc-photo-del{background:#fff3f3;border:none;border-radius:7px;padding:4px 6px;font-size:10px;color:#d32f2f;cursor:pointer;white-space:nowrap}
-.photo-book-bar{display:flex;gap:8px;margin:0 14px 10px}
-.photo-book-btn{flex:1;background:linear-gradient(135deg,var(--lav),var(--bl));color:#fff;border:none;border-radius:var(--rs);padding:10px 12px;font-size:12px;font-weight:700;box-shadow:0 3px 10px rgba(100,181,246,0.22)}
-.photo-book-btn.secondary{background:var(--card);color:var(--text-sec);border:0.5px solid var(--border);box-shadow:none}
 .mc-edit-input{font-size:12px;flex:1;border:0.5px solid #ddd;border-radius:6px;padding:4px 8px;background:#fafafa;font-family:inherit}
 .mc-xp-input{width:44px;font-size:12px;border:0.5px solid #ddd;border-radius:6px;padding:4px;text-align:center;background:#fafafa;font-family:inherit}
 .mc-del{background:none;border:none;color:#ccc;font-size:16px;cursor:pointer;padding:2px}
@@ -347,10 +341,6 @@ input,textarea{font-family:inherit}
   <div class="edit-bar">
     <span class="edit-bar-label">✏️ 編輯模式（新增／修改／刪除任務）</span>
     <button class="edit-sw" id="xy-edit-sw" onclick="toggleXYEdit()"></button>
-  </div>
-  <div class="photo-book-bar">
-    <button class="photo-book-btn" onclick="exportPhotoBook()">📖 匯出妡羽相片書</button>
-    <button class="photo-book-btn secondary" onclick="resetSavedState()">清除本機紀錄</button>
   </div>
   <div id="xy-missions"></div>
 </div>
@@ -551,7 +541,7 @@ function buildBudget(){
   document.getElementById('budget-total').textContent='¥'+grandTotal.toLocaleString();
 }
 function toggleBC(i){document.getElementById('bc-'+i).classList.toggle('open')}
-function toggleBgt(ci,ii){budgetChecked[ci][ii]=!budgetChecked[ci][ii];saveState();buildBudget()}
+function toggleBgt(ci,ii){budgetChecked[ci][ii]=!budgetChecked[ci][ii];buildBudget()}
 
 function renderXY(){
   var wrap=document.getElementById('xy-missions');wrap.innerHTML='';
@@ -566,12 +556,12 @@ function renderXY(){
     var card=document.createElement('div');card.className='mission-card';
     var rows;
     if(xyEdit){
-      rows=m.tasks.map(function(t,ti){return '<div class="mc-row"><input class="mc-edit-input" value="'+esc(t.t)+'" onchange="missions['+di+'].tasks['+ti+'].t=this.value;saveState()"/><input class="mc-xp-input" type="number" min="5" max="50" step="5" value="'+t.xp+'" onchange="missions['+di+'].tasks['+ti+'].xp=parseInt(this.value)||10;saveState();renderXY()"/><button class="mc-del" onclick="missions['+di+'].tasks.splice('+ti+',1);xyChecked['+di+'].splice('+ti+',1);xyPhotos['+di+'].splice('+ti+',1);saveState();renderXY()">✕</button></div>'}).join('');
+      rows=m.tasks.map(function(t,ti){return '<div class="mc-row"><input class="mc-edit-input" value="'+esc(t.t)+'" onchange="missions['+di+'].tasks['+ti+'].t=this.value"/><input class="mc-xp-input" type="number" min="5" max="50" step="5" value="'+t.xp+'" onchange="missions['+di+'].tasks['+ti+'].xp=parseInt(this.value)||10;renderXY()"/><button class="mc-del" onclick="missions['+di+'].tasks.splice('+ti+',1);xyChecked['+di+'].splice('+ti+',1);xyPhotos['+di+'].splice('+ti+',1);renderXY()">✕</button></div>'}).join('');
       rows+='<div class="mc-add"><input class="mc-edit-input" id="xya-'+di+'" placeholder="新增任務..."/><input class="mc-xp-input" id="xyax-'+di+'" type="number" min="5" max="50" step="5" value="10"/><button class="mc-add-btn" onclick="addXYTask('+di+')">＋ 新增</button></div>';
     } else {
       rows=m.tasks.map(function(t,ti){
         var isDone=xyChecked[di][ti];var hasPhoto=xyPhotos[di][ti];
-        return '<div class="mc-row"><div class="mc-cb'+(isDone?' done':'')+'" onclick="xyChecked['+di+']['+ti+']=!xyChecked['+di+']['+ti+'];saveState();renderXY()"></div><span class="mc-text'+(isDone?' done':'')+'">'+esc(t.t)+'</span><span class="mc-xp-sm">+'+t.xp+'</span>'+(hasPhoto?'<div class="mc-photo-wrap"><img class="mc-photo-preview" src="'+hasPhoto+'"/><button class="mc-photo-mini" onclick="capturePhoto('+di+','+ti+')">更換</button><button class="mc-photo-del" onclick="deletePhoto('+di+','+ti+')">刪除</button></div>':'<button class="mc-photo-btn" onclick="capturePhoto('+di+','+ti+')">📷 拍照</button>')+'</div>'
+        return '<div class="mc-row"><div class="mc-cb'+(isDone?' done':'')+'" onclick="xyChecked['+di+']['+ti+']=!xyChecked['+di+']['+ti+'];renderXY()"></div><span class="mc-text'+(isDone?' done':'')+'">'+esc(t.t)+'</span><span class="mc-xp-sm">+'+t.xp+'</span>'+(hasPhoto?'<img class="mc-photo-preview" src="'+hasPhoto+'"/>':'<button class="mc-photo-btn" onclick="capturePhoto('+di+','+ti+')">📷</button>')+'</div>'
       }).join('');
     }
     card.innerHTML='<div class="mc-header"><div class="mc-dot" style="background:'+m.dot+'"></div><span class="mc-date">'+m.date+'</span><span class="mc-place">'+m.place+'</span><span class="mc-xp">'+dayXP+' XP</span></div><div class="mc-prog"><div class="mc-prog-bar" style="width:'+pct+'%"></div></div><div class="mc-body">'+rows+'</div><div class="mc-unlock" id="xyu-'+di+'" style="display:'+(done===total&&total>0?'block':'none')+'">🎉 全部完成！今晚可以轉蛋一次！</div>';
@@ -585,20 +575,13 @@ function toggleXYEdit(){xyEdit=!xyEdit;document.getElementById('xy-edit-sw').cla
 function addXYTask(di){
   var t=document.getElementById('xya-'+di).value.trim();
   var x=parseInt(document.getElementById('xyax-'+di).value)||10;
-  if(!t)return;missions[di].tasks.push({t:t,xp:x});xyChecked[di].push(false);xyPhotos[di].push(null);saveState();renderXY();
+  if(!t)return;missions[di].tasks.push({t:t,xp:x});xyChecked[di].push(false);xyPhotos[di].push(null);renderXY();
 }
 function capturePhoto(di,ti){photoTarget={di:di,ti:ti};document.getElementById('photo-cap').click()}
-function deletePhoto(di,ti){
-  if(confirm('要刪除這張照片嗎？')){
-    xyPhotos[di][ti]=null;
-    saveState();
-    renderXY();
-  }
-}
 function handlePhoto(input){
   if(!input.files[0]||!photoTarget)return;
   var reader=new FileReader();
-  reader.onload=function(e){compressImage(e.target.result,function(img){xyPhotos[photoTarget.di][photoTarget.ti]=img;photoTarget=null;saveState();renderXY()})};
+  reader.onload=function(e){xyPhotos[photoTarget.di][photoTarget.ti]=e.target.result;photoTarget=null;renderXY()};
   reader.readAsDataURL(input.files[0]);input.value='';
 }
 
@@ -607,7 +590,7 @@ function buildStamps(){
   stamps.forEach(function(s,i){
     var el=document.createElement('div');
     el.className='stamp'+(stampState[i]?' collected':'');
-    el.onclick=function(){stampState[i]=!stampState[i];saveState();buildStamps();updateXF()};
+    el.onclick=function(){stampState[i]=!stampState[i];buildStamps();updateXF()};
     el.innerHTML='<div class="stamp-emoji">'+(stampState[i]?s.e:'❓')+'</div><div class="stamp-label">'+s.l+'</div>';
     g.appendChild(el);
   });
@@ -620,7 +603,7 @@ function renderXF(){
     var card=document.createElement('div');card.className='zhuyin-card';
     var rowsHTML=m.tasks.map(function(t,ti){
       var isDone=xfChecked[di][ti];
-      return '<div class="zhuyin-row"><div class="zhuyin-cb'+(isDone?' done':'')+'" onclick="xfChecked['+di+']['+ti+']=!xfChecked['+di+']['+ti+'];saveState();renderXF();updateXF()"></div><span class="zhuyin-text'+(isDone?' done':'')+'">'+t.t+'</span><span class="zhuyin-reward">'+'⭐'.repeat(t.xp)+'</span></div>'
+      return '<div class="zhuyin-row"><div class="zhuyin-cb'+(isDone?' done':'')+'" onclick="xfChecked['+di+']['+ti+']=!xfChecked['+di+']['+ti+'];renderXF();updateXF()"></div><span class="zhuyin-text'+(isDone?' done':'')+'">'+t.t+'</span><span class="zhuyin-reward">'+'⭐'.repeat(t.xp)+'</span></div>'
     }).join('');
     card.innerHTML='<div class="zhuyin-header"><span class="zhuyin-day">'+m.date+'</span><span class="zhuyin-place">'+m.place+'</span></div><div class="zhuyin-body">'+rowsHTML+'</div><div class="zhuyin-unlock" style="display:'+(done===total?'block':'none')+'">🌟 好棒！今天的任務全部完成了！獎勵轉蛋一次！</div>';
     wrap.appendChild(card);
@@ -777,119 +760,7 @@ function loadWeather() {
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
-// ── Local save for GitHub Pages / same-device browser ──
-// This keeps task checks, edits, stamps, budget checks, and compressed photo previews
-// on the same phone/browser. It does NOT upload photos to GitHub or any cloud service.
-var STORAGE_KEY='japanTrip2026State_v1';
-
-function saveState(){
-  try{
-    var data={
-      missions:missions,
-      xyChecked:xyChecked,
-      xyPhotos:xyPhotos,
-      budgetChecked:budgetChecked,
-      stampState:stampState,
-      xfChecked:xfChecked
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }catch(e){
-    console.warn('saveState failed', e);
-    alert('照片或資料太大，瀏覽器暫存空間不夠。請先刪掉幾張照片或改用較小照片。');
-  }
-}
-
-function loadState(){
-  try{
-    var raw=localStorage.getItem(STORAGE_KEY);
-    if(!raw)return;
-    var data=JSON.parse(raw);
-    if(data.missions)missions=data.missions;
-    if(data.xyChecked)xyChecked=data.xyChecked;
-    if(data.xyPhotos)xyPhotos=data.xyPhotos;
-    if(data.budgetChecked)budgetChecked=data.budgetChecked;
-    if(data.stampState)stampState=data.stampState;
-    if(data.xfChecked)xfChecked=data.xfChecked;
-  }catch(e){
-    console.warn('loadState failed', e);
-  }
-}
-
-function resetSavedState(){
-  if(confirm('確定要清除這台裝置上的任務、照片與勾選紀錄嗎？')){
-    localStorage.removeItem(STORAGE_KEY);
-    location.reload();
-  }
-}
-
-function compressImage(dataUrl, cb){
-  var img=new Image();
-  img.onload=function(){
-    var max=900;
-    var w=img.width,h=img.height;
-    if(w>h && w>max){h=Math.round(h*max/w);w=max;}
-    else if(h>=w && h>max){w=Math.round(w*max/h);h=max;}
-    var canvas=document.createElement('canvas');
-    canvas.width=w;canvas.height=h;
-    var ctx=canvas.getContext('2d');
-    ctx.drawImage(img,0,0,w,h);
-    cb(canvas.toDataURL('image/jpeg',0.72));
-  };
-  img.onerror=function(){cb(dataUrl)};
-  img.src=dataUrl;
-}
-
-
-function stripTags(html){
-  var div=document.createElement('div');
-  div.innerHTML=html;
-  return div.textContent || div.innerText || '';
-}
-
-function exportPhotoBook(){
-  var photoCount=0;
-  var sections=[];
-  missions.forEach(function(m,di){
-    var cards=[];
-    m.tasks.forEach(function(t,ti){
-      var img=xyPhotos[di] && xyPhotos[di][ti];
-      if(img){
-        photoCount++;
-        cards.push('<div class="photo-card"><img src="'+img+'"><div class="caption"><b>'+esc(m.date)+'｜'+esc(m.place)+'</b><br>'+esc(stripTags(t.t))+'</div></div>');
-      }
-    });
-    if(cards.length){
-      sections.push('<section><h2>'+esc(m.date)+' '+esc(m.place)+'</h2><div class="grid">'+cards.join('')+'</div></section>');
-    }
-  });
-  if(!photoCount){
-    alert('目前還沒有妡羽的照片，先拍照後再匯出相片書喔！');
-    return;
-  }
-  var html='<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>妡羽的日本旅程相片書</title><style>'+
-    'body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;margin:0;background:#fff8fb;color:#3e2723;}'+
-    '.cover{min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px;background:linear-gradient(135deg,#fce4ec,#e3f2fd,#f3e5f5);}'+
-    '.cover h1{font-size:34px;margin:0 0 12px}.cover p{font-size:16px;color:#795548}.hint{font-size:13px;margin-top:24px;background:rgba(255,255,255,.75);padding:10px 14px;border-radius:14px}'+
-    'section{page-break-before:always;padding:28px 22px}h2{font-size:22px;margin:0 0 18px;color:#7b1fa2}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.photo-card{background:white;border-radius:18px;box-shadow:0 4px 16px rgba(0,0,0,.08);overflow:hidden;break-inside:avoid}.photo-card img{width:100%;height:240px;object-fit:cover;display:block}.caption{padding:12px 14px;font-size:14px;line-height:1.55}.back{padding:40px;text-align:center;font-size:18px;color:#795548}@media print{.hint{display:none}section{padding:20mm 14mm}.photo-card{box-shadow:none;border:1px solid #eee}.photo-card img{height:95mm}}@media(max-width:640px){.grid{grid-template-columns:1fr}.photo-card img{height:auto}}'+
-    '</style></head><body><div class="cover"><h1>妡羽的日本旅程相片書</h1><p>2026 關西與名古屋 9 日親子遊</p><div class="hint">打開後可用瀏覽器「列印」→「另存為 PDF」，或把照片與文字複製到 Canva 做正式相片書。</div></div>'+sections.join('')+'<div class="back">🌸 旅程結束，回憶開始發光 🌸</div></body></html>';
-  var blob=new Blob([html],{type:'text/html;charset=utf-8'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');
-  a.href=url;
-  a.download='xinyu_japan_2026_photo_book.html';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(function(){URL.revokeObjectURL(url)},1000);
-}
-
-document.addEventListener('visibilitychange', function(){
-  if(document.visibilityState==='hidden')saveState();
-});
-window.addEventListener('beforeunload', saveState);
-
-
-loadState();buildHome();buildDays();buildBudget();loadWeather();renderXY();buildStamps();renderXF();updateXF();
+buildHome();buildDays();buildBudget();loadWeather();renderXY();buildStamps();renderXF();updateXF();
 </script>
 </body>
 </html>
