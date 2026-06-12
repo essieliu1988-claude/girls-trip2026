@@ -33,6 +33,15 @@
   font-weight: 400;
   font-display: swap;
 }
+
+@font-face {
+  font-family: 'BpmfZihiKaiStd';
+  src: url('BpmfZihiKaiStd-Regular.ttf') format('truetype'),
+       url('BpmfZihiKaiStd-Regular(1).ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 :root {
   --pk: #f48fb1; --pk-deep: #e91e8c; --pk-light: #fce4ec; --pk-pale: #fff0f5;
   --bl: #64b5f6; --bl-deep: #1976d2; --bl-light: #e3f2fd; --bl-pale: #f0f7ff;
@@ -106,6 +115,66 @@ input,textarea{font-family:inherit}
 .tl-date{font-size:11px;font-weight:700;color:var(--pk-deep);min-width:36px}
 .tl-text{font-size:12px;color:var(--text-sec);flex:1;line-height:1.4}
 .tl-hotel{font-size:10px;color:var(--text-hint);background:var(--pk-pale);border-radius:8px;padding:1px 7px;white-space:nowrap}
+
+
+/* ── Treasure Map ── */
+.treasure-map{background:linear-gradient(180deg,#fffdf7,#ffffff);border:0.5px solid var(--border);border-radius:22px;padding:14px;box-shadow:0 4px 12px rgba(0,0,0,.04)}
+.map-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.map-badge{display:inline-block;background:var(--peach-light);color:#ef6c00;border-radius:999px;padding:4px 10px;font-size:10px;font-weight:700;margin-bottom:6px}
+.map-title{font-size:16px;font-weight:700;color:var(--text)}
+.map-sub{font-size:12px;color:var(--text-sec);line-height:1.5;margin-top:3px}
+.map-current{background:linear-gradient(135deg,var(--pk-pale),var(--bl-pale));color:var(--warm);border-radius:14px;padding:8px 10px;font-size:12px;font-weight:700;line-height:1.5;margin-top:10px}
+.map-progress{margin-top:10px}
+.map-progress-label{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-sec);margin-bottom:6px}
+.map-progressbar{height:10px;background:#f3f0ee;border-radius:999px;overflow:hidden}
+.map-progressfill{height:100%;background:linear-gradient(90deg,var(--pk),var(--bl),var(--mint));border-radius:999px;transition:width .25s}
+.treasure-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;position:relative;margin-top:14px;padding:6px 0}
+.treasure-grid::before{content:'';position:absolute;left:12px;right:12px;top:22px;bottom:20px;border:2px dashed rgba(244,143,177,.24);border-radius:24px;pointer-events:none}
+.treasure-step{position:relative;background:#fff;border:1px solid rgba(0,0,0,.05);border-radius:18px;padding:10px 8px 8px;min-height:94px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:4px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.04);transition:transform .15s,border-color .15s,box-shadow .15s}
+.treasure-step:active{transform:scale(.98)}
+.treasure-step:nth-child(3n+2){transform:translateY(8px)}
+.treasure-step:nth-child(3n){transform:translateY(16px)}
+.treasure-step.done{background:linear-gradient(135deg,#ffffff,#f2fff9);border-color:#b2dfdb}
+.treasure-step.current{background:linear-gradient(135deg,#fff7fb,#f5fbff);border-color:var(--pk);box-shadow:0 6px 16px rgba(244,143,177,.18)}
+.treasure-step.locked{opacity:.88}
+.treasure-step-icon{font-size:28px;line-height:1}
+.treasure-step-date{font-size:10px;font-weight:700;color:var(--pk-deep)}
+.treasure-step-name{font-size:11px;line-height:1.35;color:var(--text-sec)}
+.treasure-step-hotel{font-size:9px;color:var(--text-hint);background:#faf5f1;border-radius:999px;padding:2px 7px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.treasure-token,.treasure-check{position:absolute;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 4px 10px rgba(0,0,0,.12)}
+.treasure-token{top:-10px;right:-6px;background:linear-gradient(135deg,var(--pk),var(--bl));color:#fff}
+.treasure-check{top:-10px;left:-6px;background:#43a047;color:#fff}
+.map-controls{display:flex;gap:8px;margin-top:14px}
+.map-btn{flex:1;border:none;border-radius:12px;padding:10px 8px;font-size:12px;font-weight:700}
+.map-btn.secondary{background:#f6f3f1;color:var(--text-sec)}
+.map-btn.primary{background:linear-gradient(135deg,var(--pk),var(--bl));color:#fff}
+.map-btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── Task hint UI ── */
+.task-tools{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto}
+.task-hint-btn{border:1px solid var(--border);background:#fff;border-radius:10px;padding:4px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:40px;line-height:1}
+.task-hint-btn:active{opacity:.7}
+.task-hint-emoji{font-size:16px}
+.task-hint-label{font-size:9px;font-weight:700;color:var(--bl-deep)}
+
+.hint-modal{position:fixed;inset:0;background:rgba(62,39,35,.36);display:none;align-items:flex-end;justify-content:center;z-index:350;padding:16px}
+.hint-modal.show{display:flex}
+.hint-dialog{width:100%;max-width:398px;background:#fff;border-radius:24px;padding:16px 16px 18px;box-shadow:0 20px 40px rgba(0,0,0,.2)}
+.hint-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.hint-top-title{font-size:15px;font-weight:700;color:var(--text)}
+.hint-close{border:none;background:#f6f3f1;color:var(--text-sec);width:34px;height:34px;border-radius:50%;font-size:18px}
+.hint-hero{background:linear-gradient(135deg,var(--bl-pale),var(--pk-pale));border-radius:18px;padding:14px;display:flex;align-items:center;gap:12px}
+.hint-emoji-big{width:72px;height:72px;border-radius:18px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;box-shadow:0 4px 10px rgba(0,0,0,.06)}
+.hint-hero-title{font-size:16px;font-weight:700;color:var(--text)}
+.hint-hero-desc{font-size:12px;color:var(--text-sec);line-height:1.6;margin-top:4px}
+.hint-img{width:100%;max-height:180px;object-fit:cover;border-radius:14px;display:block}
+.hint-block{background:#faf8f7;border-radius:14px;padding:10px 12px;margin-top:10px}
+.hint-block-label{font-size:11px;font-weight:700;color:var(--warm-light);margin-bottom:4px}
+.hint-block-text{font-size:13px;color:var(--text-sec);line-height:1.6}
+.hint-act{display:flex;gap:8px;margin-top:12px}
+.hint-action{flex:1;border:none;border-radius:12px;padding:10px 12px;font-size:12px;font-weight:700}
+.hint-action.primary{background:linear-gradient(135deg,var(--pk),var(--bl));color:#fff}
+.hint-action.secondary{background:#f6f3f1;color:var(--text-sec)}
 
 .page-header{padding:16px 16px 12px;position:sticky;top:0;z-index:50;background:var(--bg)}
 .page-title{font-size:20px;font-weight:700}
@@ -181,7 +250,7 @@ input,textarea{font-family:inherit}
 .mc-prog{height:3px;background:#f0f0f0}
 .mc-prog-bar{height:100%;background:linear-gradient(90deg,var(--lav),var(--bl));transition:width .4s;border-radius:2px}
 .mc-body{padding:6px 14px 10px}
-.mc-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border)}
+.mc-row{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border)}
 .mc-row:last-child{border-bottom:none}
 .mc-cb{width:20px;height:20px;border-radius:50%;border:2px solid #ddd;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s}
 .mc-cb.done{background:linear-gradient(135deg,var(--lav),var(--bl));border-color:transparent}
@@ -228,16 +297,18 @@ input,textarea{font-family:inherit}
 .zhuyin-day{font-size:10px;font-weight:700;color:var(--pk-deep)}
 .zhuyin-place{font-size:13px;font-weight:700;flex:1;line-height:2}
 .zhuyin-body{padding:8px 12px}
-.zhuyin-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border)}
+.zhuyin-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border)}
 .zhuyin-row:last-child{border-bottom:none}
 .zhuyin-cb{width:22px;height:22px;border-radius:50%;border:2px solid #f8bbd0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;background:#fff}
 .zhuyin-cb.done{background:var(--pk);border-color:var(--pk)}
 .zhuyin-cb.done::after{content:'\2B50';font-size:11px}
-#page-xinfi{font-family:'BpmfGenSenRounded','Zen Maru Gothic',sans-serif}
+#page-xinfi{font-family:'BpmfZihiKaiStd','BpmfGenSenRounded','Zen Maru Gothic',sans-serif}
 .zhuyin-text{flex:1;font-size:16px;line-height:2.6}
 .zhuyin-text.done{color:var(--text-hint);text-decoration:line-through}
 #page-xinfi ruby{ruby-position:over;-webkit-ruby-position:over;margin:0 1px}
-#page-xinfi rt{font-size:9px;color:var(--pk-deep);font-weight:500;font-family:'BpmfIansui','BpmfGenSenRounded',sans-serif;letter-spacing:0.5px;text-align:center;padding:0 0 2px}
+#page-xinfi rt{font-size:9px;color:var(--pk-deep);font-weight:400;font-family:'BpmfZihiKaiStd','BpmfIansui','BpmfGenSenRounded',sans-serif;letter-spacing:0.5px;text-align:center;padding:0 0 2px}
+
+#page-xinfi .zhuyin-text, #page-xinfi .zhuyin-place {font-family:'BpmfZihiKaiStd','BpmfGenSenRounded','Zen Maru Gothic',sans-serif}
 .zhuyin-place{font-size:14px;font-weight:700;flex:1;line-height:2.2}
 .zhuyin-day{font-size:11px;font-weight:500;color:var(--pk-deep);margin-bottom:2px}
 .zhuyin-reward{font-size:10px;color:var(--peach);font-weight:700}
@@ -301,7 +372,7 @@ input,textarea{font-family:inherit}
     </div>
   </div>
   <div class="home-overview">
-    <div class="overview-title">✨ 9 日行程總覽</div>
+    <div class="overview-title">🗺️ 9 日尋寶地圖</div>
     <div class="timeline" id="home-timeline"></div>
   </div>
 </div>
@@ -364,6 +435,17 @@ input,textarea{font-family:inherit}
   <div class="mission-zhuyin" id="xf-missions"></div>
 </div>
 
+
+<div class="hint-modal" id="hint-modal" onclick="closeHint(event)">
+  <div class="hint-dialog" onclick="event.stopPropagation()">
+    <div class="hint-top">
+      <div class="hint-top-title">🔍 任務照片提示</div>
+      <button class="hint-close" onclick="closeHint()">×</button>
+    </div>
+    <div id="hint-content"></div>
+  </div>
+</div>
+
 <input type="file" accept="image/*" capture="environment" class="photo-input" id="photo-cap" onchange="handlePhoto(this)">
 
 <script>
@@ -378,8 +460,13 @@ function goPage(id,btn){
 var days = [
   {date:'6/16',wd:'二',title:'抵達大阪',hotel:'OMO7 大阪',color:'var(--pk)',
    spots:[{time:'14:10',name:'高雄國際線航廈出發',nav:'高雄國際機場'},{time:'18:15',name:'抵達關西機場第2航廈',nav:'関西国際空港'},{time:'18:40',name:'搭乘 Rapi:t 前往大阪',nav:'南海なんば駅'},{time:'19:30',name:'入住 OMO7 大阪',nav:'OMO7大阪'}],notes:'辦理 2 張兒童 ICOCA（各¥8,000）・預約 USJ 接駁車'},
-  {date:'6/17',wd:'三',title:'甲子園 KidZania・通天閣',hotel:'OMO7 大阪',color:'var(--bl)',
-   spots:[{time:'上午',name:'甲子園 LaLaport',nav:'ららぽーと甲子園'},{time:'下午',name:'KidZania 職業體驗',nav:'キッザニア甲子園'},{time:'傍晚',name:'通天閣大滑梯',nav:'通天閣'}],notes:'通天閣滑梯：11歲 OK / 6歲視身高'},
+  {date:'6/17',wd:'三',title:'甲子園 KidZania・Paper Message',hotel:'OMO7 大阪',color:'var(--bl)',
+   spots:[
+     {time:'上午',name:'甲子園 LaLaport',nav:'ららぽーと甲子園'},
+     {time:'下午',name:'KidZania 職業體驗',nav:'キッザニア甲子園'},
+     {time:'下午',name:'Paper Message 大阪店',nav:'https://maps.app.goo.gl/KEQQukHC7J9tMrFH6?g_st=ic'}
+   ]
+  },
   {date:'6/18',wd:'四',title:'環球影城 USJ 全日放電',hotel:'OMO7 大阪',color:'var(--lav)',
    spots:[{time:'08:00',name:'OMO7 接駁車出發',nav:'ユニバーサルスタジオジャパン'},{time:'全天',name:'USJ 園區暢玩',nav:'Universal Studios Japan'},{time:'優先',name:'瑪利歐世界整理券',nav:'Super Nintendo World'}],notes:'提早入園・優先確認瑪利歐整理券'},
   {date:'6/19',wd:'五',title:'京都浴衣散策・東山老街',hotel:'京都新阪急酒店',color:'var(--pk)',
@@ -425,7 +512,7 @@ var budget = [
 
 var missions = [
   {date:'6/16',place:'大阪',dot:'var(--pk)',tasks:[{t:'在機場找到 Rapi:t 列車並拍照',xp:10},{t:'記錄 ICOCA 儲值金額',xp:10},{t:'拍下 OMO7 飯店房間',xp:10},{t:'找到飯店附近的便利商店',xp:5}]},
-  {date:'6/17',place:'KidZania・通天閣',dot:'var(--bl)',tasks:[{t:'KidZania 選擇 3 種職業體驗',xp:20},{t:'通天閣大滑梯打卡',xp:15},{t:'記錄今日花費總計',xp:10},{t:'買一個日本小零食當伴手禮',xp:10}]},
+  {date:'6/17',place:'KidZania・Paper Message',dot:'var(--bl)',tasks:[{t:'KidZania 選擇 3 種職業體驗',xp:20},{t:'Paper Message 挑選一張喜歡的紙品或明信片',xp:15},{t:'記錄今日花費總計',xp:10},{t:'買一個日本小零食當伴手禮',xp:10}]},
   {date:'6/18',place:'環球影城 USJ',dot:'var(--lav)',tasks:[{t:'搭乘瑪利歐世界設施',xp:25},{t:'找到 Hogwarts 城堡並拍照',xp:15},{t:'記錄入園和離場時間',xp:10},{t:'蒐集一張 USJ 紀念貼紙',xp:10}]},
   {date:'6/19',place:'京都浴衣',dot:'var(--pk)',tasks:[{t:'穿上浴衣後拍正式合照',xp:15},{t:'清水坂找到 3 種傳統零食',xp:20},{t:'找到天滿宮的 Kitty 並拍照',xp:20},{t:'學會說一句京都方言',xp:10}]},
   {date:'6/20',place:'京都→名古屋',dot:'var(--mint)',tasks:[{t:'拍下藤森神社紫陽花',xp:15},{t:'記錄新幹線車次與座位號',xp:10},{t:'巧克力鬆餅美食打卡',xp:10},{t:'在梅小路公園溜滑梯',xp:10}]},
@@ -436,7 +523,7 @@ var missions = [
 
 var stamps = [
   {e:'✈️',l:'飛機起飛'},{e:'🚃',l:'Rapi:t 列車'},{e:'🏨',l:'OMO7 飯店'},
-  {e:'🎠',l:'KidZania'},{e:'🗼',l:'通天閣'},{e:'🎮',l:'環球影城'},
+  {e:'🎠',l:'KidZania'},{e:'💌',l:'Paper Message'},{e:'🎮',l:'環球影城'},
   {e:'👘',l:'京都浴衣'},{e:'⛩️',l:'清水寺'},{e:'🍵',l:'抹茶甜點'},
   {e:'🌸',l:'紫陽花'},{e:'🚄',l:'新幹線'},{e:'🍫',l:'巧克力鬆餅'},
   {e:'🐠',l:'水族館'},{e:'🏯',l:'名古屋城'},{e:'🛍️',l:'大須商店街'},
@@ -446,14 +533,14 @@ var stamps = [
 
 var zhuyinMissions = [
   {date:'2026年6月16日　<ruby>星<rt>ㄒㄧㄥ</rt></ruby><ruby>期<rt>ㄑㄧˊ</rt></ruby><ruby>二<rt>ㄦˋ</rt></ruby>',place:'<ruby>小<rt>ㄒㄧㄠˇ</rt></ruby><ruby>小<rt>ㄒㄧㄠˇ</rt></ruby><ruby>探<rt>ㄊㄢˋ</rt></ruby><ruby>險<rt>ㄒㄧㄢˇ</rt></ruby><ruby>家<rt>ㄐㄧㄚ</rt></ruby>',tasks:[
-    {t:'<ruby>尋<rt>ㄒㄩㄣˊ</rt></ruby><ruby>找<rt>ㄓㄠˇ</rt></ruby><ruby>藍<rt>ㄌㄢˊ</rt></ruby><ruby>色<rt>ㄙㄜˋ</rt></ruby><ruby>武<rt>ㄨˇ</rt></ruby><ruby>士<rt>ㄕˋ</rt></ruby><ruby>列<rt>ㄌㄧㄝˋ</rt></ruby><ruby>車<rt>ㄔㄜ</rt></ruby><ruby>合<rt>ㄏㄜˊ</rt></ruby><ruby>照<rt>ㄓㄠˋ</rt></ruby>',xp:1},
+    {t:'<ruby>尋<rt>ㄒㄩㄣˊ</rt></ruby><ruby>找<rt>ㄓㄠˇ</rt></ruby> Rapi:t <ruby>列<rt>ㄌㄧㄝˋ</rt></ruby><ruby>車<rt>ㄔㄜ</rt></ruby><ruby>合<rt>ㄏㄜˊ</rt></ruby><ruby>照<rt>ㄓㄠˋ</rt></ruby>',xp:1},
     {t:'自己<ruby>完<rt>ㄨㄢˊ</rt></ruby><ruby>成<rt>ㄔㄥˊ</rt></ruby>第一次「<ruby>嗶<rt>ㄅㄧ</rt></ruby>卡」<ruby>進<rt>ㄐㄧㄣˋ</rt></ruby><ruby>站<rt>ㄓㄢˋ</rt></ruby>',xp:1},
     {t:'<ruby>帶<rt>ㄉㄞˋ</rt></ruby><ruby>領<rt>ㄌㄧㄥˇ</rt></ruby>媽<ruby>媽<rt>ㄇㄚ</rt></ruby>走到飯<ruby>店<rt>ㄉㄧㄢˋ</rt></ruby>大<ruby>門<rt>ㄇㄣˊ</rt></ruby>口',xp:1}
   ]},
   {date:'2026年6月17日　<ruby>星<rt>ㄒㄧㄥ</rt></ruby><ruby>期<rt>ㄑㄧˊ</rt></ruby><ruby>三<rt>ㄙㄢ</rt></ruby>',place:'<ruby>解<rt>ㄐㄧㄝˇ</rt></ruby><ruby>鎖<rt>ㄙㄨㄛˇ</rt></ruby>小大人<ruby>成<rt>ㄔㄥˊ</rt></ruby><ruby>就<rt>ㄐㄧㄡˋ</rt></ruby>',tasks:[
     {t:'大<ruby>聲<rt>ㄕㄥ</rt></ruby>說出最想換的<ruby>職<rt>ㄓˊ</rt></ruby><ruby>業<rt>ㄧㄝˋ</rt></ruby><ruby>制<rt>ㄓˋ</rt></ruby><ruby>服<rt>ㄈㄨˊ</rt></ruby>',xp:1},
     {t:'<ruby>賺<rt>ㄓㄨㄢˋ</rt></ruby>到<ruby>薪<rt>ㄒㄧㄣ</rt></ruby><ruby>水<rt>ㄕㄨㄟˇ</rt></ruby>後說「Arigato！」',xp:1},
-    {t:'勇<ruby>敢<rt>ㄍㄢˇ</rt></ruby><ruby>挑<rt>ㄊㄧㄠ</rt></ruby><ruby>戰<rt>ㄓㄢˋ</rt></ruby><ruby>通<rt>ㄊㄨㄥ</rt></ruby><ruby>天<rt>ㄊㄧㄢ</rt></ruby><ruby>閣<rt>ㄍㄜˊ</rt></ruby>大<ruby>溜<rt>ㄌㄧㄡ</rt></ruby><ruby>滑<rt>ㄏㄨㄚˊ</rt></ruby><ruby>梯<rt>ㄊㄧ</rt></ruby>',xp:1}
+    {t:'挑<ruby>選<rt>ㄒㄩㄢˇ</rt></ruby> Paper Message 的可<ruby>愛<rt>ㄞˋ</rt></ruby><ruby>卡<rt>ㄎㄚˇ</rt></ruby><ruby>片<rt>ㄆㄧㄢˋ</rt></ruby>',xp:1}
   ]},
   {date:'2026年6月18日　<ruby>星<rt>ㄒㄧㄥ</rt></ruby><ruby>期<rt>ㄑㄧˊ</rt></ruby><ruby>四<rt>ㄙˋ</rt></ruby>',place:'<ruby>奇<rt>ㄑㄧˊ</rt></ruby><ruby>幻<rt>ㄏㄨㄢˋ</rt></ruby>大<ruby>冒<rt>ㄇㄠˋ</rt></ruby><ruby>險<rt>ㄒㄧㄢˇ</rt></ruby>',tasks:[
     {t:'找<ruby>到<rt>ㄉㄠˋ</rt></ruby>金<ruby>幣<rt>ㄅㄧˋ</rt></ruby>方<ruby>塊<rt>ㄎㄨㄞˋ</rt></ruby>並<ruby>跳<rt>ㄊㄧㄠˋ</rt></ruby>起來<ruby>敲<rt>ㄑㄧㄠ</rt></ruby><ruby>擊<rt>ㄐㄧˊ</rt></ruby>它',xp:1},
@@ -488,15 +575,15 @@ var zhuyinMissions = [
 ];
 
 var tlData = [
-  {d:'6/16',t:'抵達關西機場 → 南海電鐵直達大阪',h:'OMO7',dot:'var(--pk)'},
-  {d:'6/17',t:'甲子園 KidZania → 傍晚回大阪',h:'OMO7',dot:'var(--bl)'},
-  {d:'6/18',t:'大阪環球影城（USJ）全日放電',h:'OMO7',dot:'var(--lav)'},
-  {d:'6/19',t:'抵達京都 → 東山老街浴衣散策',h:'新阪急',dot:'var(--pk)'},
-  {d:'6/20',t:'梅小路公園 → 新幹線赴名古屋',h:'DEL style',dot:'var(--mint)'},
-  {d:'6/21',t:'水族館 → 名古屋城 → 大須',h:'DEL style',dot:'var(--bl)'},
-  {d:'6/22',t:'樂高樂園 → 火之鳥回大阪',h:'OMO7',dot:'var(--peach)'},
-  {d:'6/23',t:'大阪觀光 → 心齋橋・梅田採買',h:'OMO7',dot:'var(--lav)'},
-  {d:'6/24',t:'南海電鐵赴機場 → 回台',h:'🏠',dot:'var(--warm-light)'}
+  {d:'6/16',title:'抵達大阪',h:'OMO7',icon:'✈️',dot:'var(--pk)'},
+  {d:'6/17',title:'KidZania・Paper Message',h:'OMO7',icon:'💌',dot:'var(--bl)'},
+  {d:'6/18',title:'USJ 全日放電',h:'OMO7',icon:'🎮',dot:'var(--lav)'},
+  {d:'6/19',title:'京都浴衣散策',h:'新阪急',icon:'👘',dot:'var(--pk)'},
+  {d:'6/20',title:'梅小路公園・新幹線',h:'DEL style',icon:'🚄',dot:'var(--mint)'},
+  {d:'6/21',title:'水族館・名古屋城',h:'DEL style',icon:'🐠',dot:'var(--bl)'},
+  {d:'6/22',title:'樂高樂園・火之鳥',h:'OMO7',icon:'🧱',dot:'var(--peach)'},
+  {d:'6/23',title:'大阪城・最後採買',h:'OMO7',icon:'🏰',dot:'var(--lav)'},
+  {d:'6/24',title:'滿載回家',h:'🏠',icon:'🏠',dot:'var(--warm-light)'}
 ];
 
 var xyChecked = missions.map(function(m){return new Array(m.tasks.length).fill(false)});
@@ -507,9 +594,176 @@ var stampState = new Array(stamps.length).fill(false);
 var xfChecked = zhuyinMissions.map(function(m){return new Array(m.tasks.length).fill(false)});
 var photoTarget = null;
 
+var tripProgress = 0;
+var STATE_KEY = 'japanTrip2026_v3';
+
+var missionHints = [
+  [
+    {emoji:'🚃',title:'南海特急 Rapi:t',desc:'深藍色車身、車頭像機器人面罩，側邊有圓圓的窗戶。',look:'先找南海電鐵月台，再找超有特色的深藍色特急列車。'},
+    {emoji:'💳',title:'ICOCA 卡加值',desc:'像一張小交通卡，在售票機或櫃檯加值後可以拍下金額畫面。',look:'找售票機、儲值畫面，或拿著 ICOCA 卡和票卡機一起拍。'},
+    {emoji:'🛏️',title:'OMO7 房間',desc:'拍下房間裡你最喜歡的角落，像床、窗戶或可愛備品。',look:'可以把床、行李和窗景一起拍進去。'},
+    {emoji:'🏪',title:'日本便利商店',desc:'常見是 7-Eleven、FamilyMart、Lawson，門口招牌很明顯。',look:'找藍白、綠藍白或紅橘綠的便利商店招牌。'}
+  ],
+  [
+    {emoji:'👩‍🚒',title:'KidZania 職業體驗',desc:'小朋友會穿上制服體驗工作，像消防員、醫生、警察或甜點師。',look:'找穿制服的小朋友、職業體驗櫃位和工作道具。'},
+    {emoji:'💌',title:'Paper Message 紙品店',desc:'店裡會有可愛插畫卡片、貼紙、信紙和紙膠帶，色彩繽紛。',look:'找滿滿卡片牆、文具小物、可愛明信片陳列架。'},
+    {emoji:'🧾',title:'記錄今日花費',desc:'把今天花的錢寫下來或拍收據，就是完成任務。',look:'拍下收據、價錢標籤，或在手機記事本記錄總金額。'},
+    {emoji:'🍘',title:'日本小零食',desc:'像餅乾、果凍、糖果、小包仙貝都可以。',look:'到便利商店或商場零食區，挑一個看起來最特別的。'}
+  ],
+  [
+    {emoji:'🪙',title:'瑪利歐世界設施',desc:'找綠色水管、蘑菇、金幣和瑪利歐角色，就是對的位置。',look:'看到 Super Nintendo World 的大招牌和遊樂設施入口就到了。'},
+    {emoji:'🏰',title:'Hogwarts 城堡',desc:'灰色高塔城堡，像魔法學校，前面常有很多人拍照。',look:'遠遠看到一座高高尖塔的巨大城堡就是它。'},
+    {emoji:'⏰',title:'記錄入園與離場',desc:'入園和離場時拍一下時間，或直接看手機截圖記錄。',look:'可以拍門票、入口招牌和手機時間。'},
+    {emoji:'🎟️',title:'USJ 紀念貼紙',desc:'園區工作人員有時會發主題貼紙，可愛又適合收藏。',look:'遇到工作人員時可以禮貌詢問有沒有 sticker。'}
+  ],
+  [
+    {emoji:'👘',title:'浴衣正式合照',desc:'穿好浴衣後找有老街、木屋或石板路的背景拍照最美。',look:'把全身浴衣、腰帶和髮飾一起拍進去。'},
+    {emoji:'🍡',title:'清水坂傳統零食',desc:'像糰子、抹茶點心、仙貝或八橋都是京都常見點心。',look:'看商店櫥窗裡的和風點心，找到 3 種不同的。'},
+    {emoji:'😺',title:'天滿宮的 Kitty',desc:'注意繪馬、御守或神社裡可愛的 Hello Kitty 圖案。',look:'找粉色 Kitty、蝴蝶結或聯名周邊。'},
+    {emoji:'🗣️',title:'京都方言',desc:'學一句像「おおきに」這樣的京都風說法也算完成。',look:'可以請店員或媽媽幫忙記下聽到的可愛說法。'}
+  ],
+  [
+    {emoji:'🌸',title:'藤森神社紫陽花',desc:'紫陽花就是繡球花，一球一球、顏色很多。',look:'找藍色、紫色、粉色的大朵花球。'},
+    {emoji:'🚄',title:'新幹線車次與座位',desc:'月台電子看板和車票上都會有車次、車廂和座位號。',look:'拍票券、電子看板或座位上方的號碼。'},
+    {emoji:'🍫',title:'巧克力鬆餅',desc:'找有巧克力醬、鮮奶油或冰淇淋的鬆餅甜點。',look:'餐點上桌時先拍一張最誘人的照片。'},
+    {emoji:'🛝',title:'梅小路公園溜滑梯',desc:'公園遊具區通常有色彩鮮明的溜滑梯和攀爬設施。',look:'找小朋友最多、看起來最好玩的遊具區。'}
+  ],
+  [
+    {emoji:'🐟',title:'最大的魚',desc:'通常可以在大水槽裡看到超大的魚、魟魚或鯨豚。',look:'看到體型最大、最吸睛的魚時記下名字。'},
+    {emoji:'🏯',title:'名古屋城天守閣',desc:'城堡屋頂常有金色鯱，外觀是白牆綠瓦。',look:'遠遠找有金色屋頂裝飾的大城堡。'},
+    {emoji:'🎁',title:'奇怪紀念品',desc:'找最搞怪、最有名古屋特色或最意想不到的東西。',look:'像造型吊飾、扭蛋、怪趣味文具都很適合。'},
+    {emoji:'🍜',title:'名古屋在地小吃',desc:'味噌豬排、雞翅、手羽先、紅豆吐司都很代表名古屋。',look:'看到菜單有名古屋名物，就可以挑一樣試試。'}
+  ],
+  [
+    {emoji:'🗼',title:'最高的樂高建築',desc:'找園區裡最高、最醒目的樂高模型或塔樓。',look:'抬頭看最突出、最容易被大家拍照的那一座。'},
+    {emoji:'🎢',title:'5 個樂高設施',desc:'每玩完一個設施就記一筆，很快就能集滿 5 個。',look:'可以拍設施門口招牌當作完成紀錄。'},
+    {emoji:'🔥',title:'火之鳥特急車頭',desc:'車身多半是紅色，車頭線條流線又很帥。',look:'找近鐵月台上的紅色特急列車前端。'},
+    {emoji:'🛍️',title:'樂高商店紀念品',desc:'商店裡會有樂高盒組、鑰匙圈、文具和小玩偶。',look:'找到最想帶回家的樂高小寶物。'}
+  ],
+  [
+    {emoji:'🏰',title:'大阪城天守閣',desc:'白牆綠瓦，屋頂邊緣有金色裝飾，非常醒目。',look:'在外面廣場找一個能把整座城拍進去的位置。'},
+    {emoji:'📝',title:'採買清單',desc:'買到什麼就記一項，滿 5 樣就過關。',look:'可以拍戰利品、收據或手機記事本。'},
+    {emoji:'🚇',title:'地鐵搭 3 站',desc:'看地鐵路線圖、站名或進站螢幕來記錄。',look:'每到一站就數一下，第三站時拍照留念。'},
+    {emoji:'🎁',title:'送媽媽的禮物',desc:'選一個媽媽會喜歡的小東西，像甜點、文具或飾品。',look:'看到第一眼就想到媽媽的那個，就是候選人。'}
+  ]
+];
+
+var zhuyinHints = [
+  [
+    {emoji:'🚃',title:'Rapi:t 列車',desc:'Rapi:t 是深藍色、像機器人面罩的特急列車。',look:'找圓圓窗戶和帥氣車頭。'},
+    {emoji:'💳',title:'嗶卡進站',desc:'把 ICOCA 卡輕碰閘門感應區就會嗶一聲。',look:'找有箭頭和小感應區的閘門。'},
+    {emoji:'🏨',title:'飯店大門',desc:'跟著招牌走，就能找到 OMO7 的入口。',look:'注意飯店名字和大門口。'}
+  ],
+  [
+    {emoji:'👕',title:'職業制服',desc:'KidZania 裡有很多不同工作服，像消防員、醫師、警察。',look:'找最想穿的一套制服。'},
+    {emoji:'💴',title:'薪水與 Arigato',desc:'完成工作後會拿到 KidZania 的薪水。',look:'拿到薪水時記得說謝謝。'},
+    {emoji:'💌',title:'可愛卡片',desc:'Paper Message 的卡片會有療癒插畫和可愛配色。',look:'找最喜歡的小動物、甜點或花花圖案。'}
+  ],
+  [
+    {emoji:'🪙',title:'金幣方塊',desc:'是黃黃色、像瑪利歐遊戲裡的方塊。',look:'看到可以互動敲擊的方塊就對了。'},
+    {emoji:'⭐',title:'卡通角色',desc:'可能會看到瑪利歐、路易吉、奇諾比奧等角色。',look:'找到 3 個角色就揮揮手。'},
+    {emoji:'🧁',title:'造型點心',desc:'找造型最可愛的點心、飲料或角色主題食物。',look:'看到就想拍照的可愛食物就是候選。'}
+  ],
+  [
+    {emoji:'👘',title:'浴衣花色與髮飾',desc:'浴衣上會有花朵、和風圖樣，還有小髮飾。',look:'選你最喜歡的顏色和圖案。'},
+    {emoji:'🌂',title:'和風紙傘或扇子',desc:'看起來很日本風的紙傘、紙扇很適合拍照。',look:'找古色古香的小道具。'},
+    {emoji:'💳',title:'ICOCA 卡保管員',desc:'把卡收好，不掉卡就是超棒保管員。',look:'把卡放進小包包或口袋安全處。'}
+  ],
+  [
+    {emoji:'😺',title:'Hello Kitty 繪馬',desc:'繪馬是可以寫願望的小木牌。',look:'找有 Kitty 圖案的可愛繪馬。'},
+    {emoji:'🌸',title:'不同顏色的繡球花',desc:'繡球花是一球一球的大花。',look:'找 3 種不一樣顏色的花球。'},
+    {emoji:'🍫',title:'巧克力鬆餅結帳',desc:'鬆餅通常會配巧克力和奶油。',look:'結帳時自己拿硬幣，完成小挑戰。'}
+  ],
+  [
+    {emoji:'🐬',title:'小白鯨',desc:'小白鯨全身白白的，很圓很可愛。',look:'找白色的大海洋動物。'},
+    {emoji:'🐧',title:'企鵝',desc:'企鵝黑白黑白，走路會搖搖擺擺。',look:'看到企鵝就學牠走路。'},
+    {emoji:'🪙',title:'零用錢買玩具',desc:'可以選一個小玩具或扭蛋。',look:'找到價格剛剛好的小驚喜。'}
+  ],
+  [
+    {emoji:'🚗',title:'迷你駕照',desc:'在駕駛學校完成體驗，會拿到小小駕照。',look:'找開車體驗區和駕照卡片。'},
+    {emoji:'🦒',title:'高高的樂高動物',desc:'看看有沒有長頸鹿或其他高高的樂高動物。',look:'找比你還高的積木作品。'},
+    {emoji:'🔥',title:'火之鳥列車晚餐',desc:'火之鳥是紅色特急列車。',look:'上車前把晚餐和列車一起拍。'}
+  ],
+  [
+    {emoji:'🐟',title:'金色大魚',desc:'大阪城屋頂有閃亮亮的金色鯱。',look:'抬頭找會發光、像魚的金色裝飾。'},
+    {emoji:'🚇',title:'地鐵路線顏色',desc:'大阪地鐵每條線都有代表色。',look:'看地圖上不同顏色的線條。'},
+    {emoji:'🎁',title:'送爸爸的禮物',desc:'挑一個你覺得爸爸會喜歡的小禮物。',look:'看到就想到爸爸的東西就可以。'}
+  ]
+];
+
+
+function saveState(){
+  try{
+    localStorage.setItem(STATE_KEY, JSON.stringify({
+      tripProgress: tripProgress,
+      xyChecked: xyChecked,
+      budgetChecked: budgetChecked,
+      stampState: stampState,
+      xfChecked: xfChecked
+    }));
+  }catch(e){}
+}
+function sameShape(a,b){
+  return JSON.stringify(a.map(function(x){return x.length||0}))===JSON.stringify(b.map(function(x){return x.length||0}));
+}
+function loadState(){
+  try{
+    var raw = localStorage.getItem(STATE_KEY);
+    if(!raw) return;
+    var s = JSON.parse(raw);
+    if(typeof s.tripProgress==='number') tripProgress = Math.max(0, Math.min(tlData.length-1, s.tripProgress));
+    if(Array.isArray(s.xyChecked) && sameShape(s.xyChecked, xyChecked)) xyChecked = s.xyChecked;
+    if(Array.isArray(s.budgetChecked) && sameShape(s.budgetChecked, budgetChecked)) budgetChecked = s.budgetChecked;
+    if(Array.isArray(s.xfChecked) && sameShape(s.xfChecked, xfChecked)) xfChecked = s.xfChecked;
+    if(Array.isArray(s.stampState) && s.stampState.length===stampState.length) stampState = s.stampState;
+  }catch(e){}
+}
+function missionHint(di,ti){ return (missionHints[di]||[])[ti] || null; }
+function zhuyinHint(di,ti){ return (zhuyinHints[di]||[])[ti] || null; }
+function openHint(kind,di,ti){
+  var hint = kind==='xy' ? missionHint(di,ti) : zhuyinHint(di,ti);
+  if(!hint) return;
+  var html = '';
+  if(hint.img){
+    html += '<img class="hint-img" src="'+hint.img+'" alt="'+esc(hint.title)+'">';
+  }
+  html += '<div class="hint-hero">'
+    + '<div class="hint-emoji-big">'+(hint.emoji||'🔍')+'</div>'
+    + '<div><div class="hint-hero-title">'+esc(hint.title||'任務提示')+'</div>'
+    + '<div class="hint-hero-desc">'+esc(hint.desc||'看看現場長什麼樣子，就更容易找到目標囉！')+'</div></div></div>'
+    + '<div class="hint-block"><div class="hint-block-label">👀 現場要找什麼？</div><div class="hint-block-text">'+esc(hint.look||hint.desc||'')+'</div></div>';
+  if(hint.tip){
+    html += '<div class="hint-block"><div class="hint-block-label">📝 小提醒</div><div class="hint-block-text">'+esc(hint.tip)+'</div></div>';
+  }
+  html += '<div class="hint-act"><button class="hint-action secondary" onclick="closeHint()">我知道了</button><button class="hint-action primary" onclick="closeHint()">出發找找看！</button></div>';
+  document.getElementById('hint-content').innerHTML = html;
+  document.getElementById('hint-modal').classList.add('show');
+}
+function closeHint(){ document.getElementById('hint-modal').classList.remove('show'); }
+function setTripProgress(i){ tripProgress = Math.max(0, Math.min(tlData.length-1, i)); saveState(); buildHome(); }
+function advanceTrip(step){ setTripProgress(tripProgress + step); }
 function buildHome(){
   var tl=document.getElementById('home-timeline');
-  tl.innerHTML=tlData.map(function(d){return '<div class="tl-item"><div class="tl-dot" style="background:'+d.dot+'"></div><span class="tl-date">'+d.d+'</span><span class="tl-text">'+d.t+'</span><span class="tl-hotel">'+d.h+'</span></div>'}).join('');
+  var current = tlData[tripProgress] || tlData[0];
+  var pct = Math.round((tripProgress/(tlData.length-1))*100);
+  var grid = tlData.map(function(d,i){
+    var cls = i<tripProgress?'done':(i===tripProgress?'current':'locked');
+    return '<div class="treasure-step '+cls+'" onclick="setTripProgress('+i+')">'
+      +(i<tripProgress?'<div class="treasure-check">✓</div>':'')
+      +(i===tripProgress?'<div class="treasure-token">✈️</div>':'')
+      +'<div class="treasure-step-icon">'+d.icon+'</div>'
+      +'<div class="treasure-step-date">'+d.d+'</div>'
+      +'<div class="treasure-step-name">'+esc(d.title)+'</div>'
+      +'<div class="treasure-step-hotel">'+esc(d.h)+'</div>'
+      +'</div>';
+  }).join('');
+  tl.innerHTML = '<div class="treasure-map">'
+    + '<div class="map-top"><div><div class="map-badge">今日進度會自動記住</div><div class="map-title">🌈 日本尋寶大冒險</div><div class="map-sub">每天完成行程後，就按一下「完成今天」往前走一格；也可以直接點地圖跳到任一站。</div></div></div>'
+    + '<div class="map-current">目前走到第 '+(tripProgress+1)+' 站｜'+current.d+'・'+esc(current.title)+'</div>'
+    + '<div class="map-progress"><div class="map-progress-label"><span>旅程進度</span><span>'+pct+'%</span></div><div class="map-progressbar"><div class="map-progressfill" style="width:'+pct+'%"></div></div></div>'
+    + '<div class="treasure-grid">'+grid+'</div>'
+    + '<div class="map-controls"><button class="map-btn secondary" '+(tripProgress===0?'disabled':'')+' onclick="advanceTrip(-1)">⬅️ 上一格</button><button class="map-btn primary" '+(tripProgress===tlData.length-1?'disabled':'')+' onclick="advanceTrip(1)">✅ 完成今天</button></div>'
+    + '</div>';
 }
 
 function buildDays(){
@@ -522,7 +776,10 @@ function buildDays(){
   });
 }
 function toggleDD(i){document.getElementById('dd-'+i).classList.toggle('open');document.getElementById('dc-'+i).classList.toggle('open')}
-function navTo(q){window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q),'_blank')}
+function navTo(q){
+  if(/^https?:\/\//.test(q)){window.open(q,'_blank');return}
+  window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q),'_blank')
+}
 
 function buildBudget(){
   var c=document.getElementById('budget-cats');c.innerHTML='';
@@ -541,7 +798,7 @@ function buildBudget(){
   document.getElementById('budget-total').textContent='¥'+grandTotal.toLocaleString();
 }
 function toggleBC(i){document.getElementById('bc-'+i).classList.toggle('open')}
-function toggleBgt(ci,ii){budgetChecked[ci][ii]=!budgetChecked[ci][ii];buildBudget()}
+function toggleBgt(ci,ii){budgetChecked[ci][ii]=!budgetChecked[ci][ii];saveState();buildBudget()}
 
 function renderXY(){
   var wrap=document.getElementById('xy-missions');wrap.innerHTML='';
@@ -560,8 +817,8 @@ function renderXY(){
       rows+='<div class="mc-add"><input class="mc-edit-input" id="xya-'+di+'" placeholder="新增任務..."/><input class="mc-xp-input" id="xyax-'+di+'" type="number" min="5" max="50" step="5" value="10"/><button class="mc-add-btn" onclick="addXYTask('+di+')">＋ 新增</button></div>';
     } else {
       rows=m.tasks.map(function(t,ti){
-        var isDone=xyChecked[di][ti];var hasPhoto=xyPhotos[di][ti];
-        return '<div class="mc-row"><div class="mc-cb'+(isDone?' done':'')+'" onclick="xyChecked['+di+']['+ti+']=!xyChecked['+di+']['+ti+'];renderXY()"></div><span class="mc-text'+(isDone?' done':'')+'">'+esc(t.t)+'</span><span class="mc-xp-sm">+'+t.xp+'</span>'+(hasPhoto?'<img class="mc-photo-preview" src="'+hasPhoto+'"/>':'<button class="mc-photo-btn" onclick="capturePhoto('+di+','+ti+')">📷</button>')+'</div>'
+        var isDone=xyChecked[di][ti];var hasPhoto=xyPhotos[di][ti];var hint=missionHint(di,ti);
+        return '<div class="mc-row"><div class="mc-cb'+(isDone?' done':'')+'" onclick="xyChecked['+di+']['+ti+']=!xyChecked['+di+']['+ti+'];saveState();renderXY()"></div><span class="mc-text'+(isDone?' done':'')+'">'+esc(t.t)+'</span><span class="mc-xp-sm">+'+t.xp+'</span><div class="task-tools">'+(hint?'<button class="task-hint-btn" onclick="event.stopPropagation();openHint(\'xy\','+di+','+ti+')"><span class="task-hint-emoji">'+hint.emoji+'</span><span class="task-hint-label">提示</span></button>':'')+(hasPhoto?'<img class="mc-photo-preview" src="'+hasPhoto+'"/>':'<button class="mc-photo-btn" onclick="capturePhoto('+di+','+ti+')">📷</button>')+'</div></div>'
       }).join('');
     }
     card.innerHTML='<div class="mc-header"><div class="mc-dot" style="background:'+m.dot+'"></div><span class="mc-date">'+m.date+'</span><span class="mc-place">'+m.place+'</span><span class="mc-xp">'+dayXP+' XP</span></div><div class="mc-prog"><div class="mc-prog-bar" style="width:'+pct+'%"></div></div><div class="mc-body">'+rows+'</div><div class="mc-unlock" id="xyu-'+di+'" style="display:'+(done===total&&total>0?'block':'none')+'">🎉 全部完成！今晚可以轉蛋一次！</div>';
@@ -590,7 +847,7 @@ function buildStamps(){
   stamps.forEach(function(s,i){
     var el=document.createElement('div');
     el.className='stamp'+(stampState[i]?' collected':'');
-    el.onclick=function(){stampState[i]=!stampState[i];buildStamps();updateXF()};
+    el.onclick=function(){stampState[i]=!stampState[i];saveState();buildStamps();updateXF()};
     el.innerHTML='<div class="stamp-emoji">'+(stampState[i]?s.e:'❓')+'</div><div class="stamp-label">'+s.l+'</div>';
     g.appendChild(el);
   });
@@ -602,8 +859,8 @@ function renderXF(){
     var total=m.tasks.length;
     var card=document.createElement('div');card.className='zhuyin-card';
     var rowsHTML=m.tasks.map(function(t,ti){
-      var isDone=xfChecked[di][ti];
-      return '<div class="zhuyin-row"><div class="zhuyin-cb'+(isDone?' done':'')+'" onclick="xfChecked['+di+']['+ti+']=!xfChecked['+di+']['+ti+'];renderXF();updateXF()"></div><span class="zhuyin-text'+(isDone?' done':'')+'">'+t.t+'</span><span class="zhuyin-reward">'+'⭐'.repeat(t.xp)+'</span></div>'
+      var isDone=xfChecked[di][ti];var hint=zhuyinHint(di,ti);
+      return '<div class="zhuyin-row"><div class="zhuyin-cb'+(isDone?' done':'')+'" onclick="xfChecked['+di+']['+ti+']=!xfChecked['+di+']['+ti+'];saveState();renderXF();updateXF()"></div><span class="zhuyin-text'+(isDone?' done':'')+'">'+t.t+'</span><span class="zhuyin-reward">'+'⭐'.repeat(t.xp)+'</span><div class="task-tools">'+(hint?'<button class="task-hint-btn" onclick="event.stopPropagation();openHint(\'xf\','+di+','+ti+')"><span class="task-hint-emoji">'+hint.emoji+'</span><span class="task-hint-label">提示</span></button>':'')+'</div></div>'
     }).join('');
     card.innerHTML='<div class="zhuyin-header"><span class="zhuyin-day">'+m.date+'</span><span class="zhuyin-place">'+m.place+'</span></div><div class="zhuyin-body">'+rowsHTML+'</div><div class="zhuyin-unlock" style="display:'+(done===total?'block':'none')+'">🌟 好棒！今天的任務全部完成了！獎勵轉蛋一次！</div>';
     wrap.appendChild(card);
@@ -760,7 +1017,7 @@ function loadWeather() {
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
-buildHome();buildDays();buildBudget();loadWeather();renderXY();buildStamps();renderXF();updateXF();
+loadState();buildHome();buildDays();buildBudget();loadWeather();renderXY();buildStamps();renderXF();updateXF();
 </script>
 </body>
 </html>
