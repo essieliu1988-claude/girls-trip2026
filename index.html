@@ -845,7 +845,9 @@ body::before{background:radial-gradient(circle at 8% 5%,rgba(247,167,166,.20),tr
       <div class="mom-card-sub">會把每日文字、花費、待辦、購買清單匯出成 JSON 備份檔；也可以用「匯入 / 還原 JSON 備份檔」把資料放回來。照片若太多，可能因 Safari/Chrome 瀏覽器容量限制無法完整保存，建議每天另外存到 iCloud / Google Photos。</div>
       <button class="mom-btn dark" onclick="momExport()">下載 JSON 備份檔</button>
       <button class="mom-btn secondary" onclick="momImportPick()">匯入 / 還原 JSON 備份檔</button>
+      <button class="mom-btn secondary" onclick="momRestoreBrowserBackup()">從瀏覽器暫存還原</button>
       <button class="mom-btn ghost" onclick="momResetConfirm()">清空媽媽筆記</button>
+      <div class="mom-backup-note" id="mom-backup-status"></div>
     </div>
     <div class="mom-backup-note">提醒：這個網頁是靜態網頁，這一版資料會存在目前手機瀏覽器。不要清除 手機瀏覽器的網站資料，也不要只存在無痕模式。</div>
   </div>
@@ -1186,23 +1188,29 @@ var zhuyinHints = [
 ];
 
 
+function stableSet(key,value){
+  try{ localStorage.setItem(key, value); return true; }catch(e){ return false; }
+}
+function stableGet(key){
+  try{ return localStorage.getItem(key); }catch(e){ return null; }
+}
 function saveState(){
-  try{
-    localStorage.setItem(STATE_KEY, JSON.stringify({
+  var payload = JSON.stringify({
       tripProgress: tripProgress,
       xyChecked: xyChecked,
       budgetChecked: budgetChecked,
       stampState: stampState,
       xfChecked: xfChecked
-    }));
-  }catch(e){}
+    });
+  stableSet(STATE_KEY, payload);
+  stableSet(STATE_BACKUP_KEY, payload);
 }
 function sameShape(a,b){
   return JSON.stringify(a.map(function(x){return x.length||0}))===JSON.stringify(b.map(function(x){return x.length||0}));
 }
 function loadState(){
   try{
-    var raw = localStorage.getItem(STATE_KEY);
+    var raw = stableGet(STATE_KEY) || stableGet(STATE_BACKUP_KEY);
     if(!raw) return;
     var s = JSON.parse(raw);
     if(typeof s.tripProgress==='number') tripProgress = Math.max(0, Math.min(tlData.length-1, s.tripProgress));
@@ -1372,7 +1380,47 @@ function updateXF(){
 
 // ── Mom Travel Notes ──
 var MOM_KEY = 'japanTrip2026MomNotes_v1';
+var MOM_META_KEY = 'japanTrip2026MomMeta_v1';
+var MOM_BROWSER_BACKUP_KEY = 'japanTrip2026MomNotes_browserBackup_v1';
+var STATE_BACKUP_KEY = 'japanTrip2026_state_browserBackup_v1';
 var momPhotoTarget = null;
+var momMeta = {dirtyCount:0,lastBackupAt:null,lastReminderAt:null,lastBrowserSaveAt:null,lastStorageMode:'localStorage'};
+function momSaveBrowserBackup(){
+  try{
+    var payload=JSON.stringify(momState);
+    localStorage.setItem(MOM_KEY,payload);
+    localStorage.setItem(MOM_BROWSER_BACKUP_KEY,payload);
+    momMeta.lastBrowserSaveAt=new Date().toISOString();
+    momMeta.lastStorageMode='localStorage';
+    localStorage.setItem(MOM_META_KEY,JSON.stringify(momMeta));
+    return true;
+  }catch(e){
+    try{
+      var payload2=JSON.stringify(momState);
+      sessionStorage.setItem(MOM_BROWSER_BACKUP_KEY,payload2);
+      momMeta.lastBrowserSaveAt=new Date().toISOString();
+      momMeta.lastStorageMode='sessionStorage';
+      localStorage.setItem(MOM_META_KEY,JSON.stringify(momMeta));
+      return true;
+    }catch(e2){
+      return false;
+    }
+  }
+}
+function momLoadBrowserBackup(){
+  try{
+    return localStorage.getItem(MOM_KEY) || localStorage.getItem(MOM_BROWSER_BACKUP_KEY) || sessionStorage.getItem(MOM_BROWSER_BACKUP_KEY);
+  }catch(e){
+    try{ return sessionStorage.getItem(MOM_BROWSER_BACKUP_KEY); }catch(e2){ return null; }
+  }
+}
+function requestDurableStorage(){
+  try{
+    if(navigator.storage && navigator.storage.persist){
+      navigator.storage.persist().then(function(){}).catch(function(){});
+    }
+  }catch(e){}
+}
 var momState = {
   journal: days.map(function(d){ return {date:d.date, title:d.title, text:'', photo:null, book:false}; }),
   expenses: [],
@@ -1387,24 +1435,84 @@ var momState = {
     {name:'名古屋限定零食', forWho:'家人', place:'名古屋', budget:0, status:'想買'}
   ]
 };
-function momSave(){try{localStorage.setItem(MOM_KEY,JSON.stringify(momState));}catch(e){alert('儲存空間可能不足，照片太多時建議先匯出備份或改存文字。')}}
-function momLoad(){try{var raw=localStorage.getItem(MOM_KEY);if(!raw)return;var s=JSON.parse(raw);if(s&&Array.isArray(s.journal))momState=s;}catch(e){}}
+function momMetaSave(){try{localStorage.setItem(MOM_META_KEY,JSON.stringify(momMeta));}catch(e){}}
+function momMetaLoad(){try{var raw=localStorage.getItem(MOM_META_KEY);if(!raw)return;var s=JSON.parse(raw);if(s&&typeof s==='object')momMeta=Object.assign(momMeta,s);}catch(e){}}
+function momTouchDirty(){
+  momMeta.dirtyCount=(parseInt(momMeta.dirtyCount)||0)+1;
+  momMetaSave();
+}
+function momBackupDone(){
+  momMeta.dirtyCount=0;
+  momMeta.lastBackupAt=new Date().toISOString();
+  momMeta.lastReminderAt=null;
+  momMetaSave();
+  momRenderBackupStatus();
+}
+function momMaybeRemindBackup(){
+  var dirty=parseInt(momMeta.dirtyCount)||0;
+  if(!dirty)return;
+  if(dirty===1 || dirty%3===0){
+    var now=Date.now();
+    var last=momMeta.lastReminderAt?new Date(momMeta.lastReminderAt).getTime():0;
+    if(!last || (now-last)>180000){
+      momMeta.lastReminderAt=new Date(now).toISOString();
+      momMetaSave();
+      setTimeout(function(){
+        alert('已存到目前瀏覽器，但為了避免下次打開資料不見，建議現在到「媽媽 → 備份」下載 JSON 備份檔。');
+      },30);
+    }
+  }
+}
+function momRenderBackupStatus(){
+  var el=document.getElementById('mom-backup-status');
+  if(!el)return;
+  var dirty=parseInt(momMeta.dirtyCount)||0;
+  var lines=[];
+  if(dirty>0){
+    lines.push('目前有 '+dirty+' 次新變更尚未另外備份，建議現在下載 JSON 備份檔。');
+  }else if(momMeta.lastBackupAt){
+    var d=new Date(momMeta.lastBackupAt);
+    lines.push('最近一次已下載 JSON 備份：'+(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'));
+  }
+  if(momMeta.lastBrowserSaveAt){
+    var b=new Date(momMeta.lastBrowserSaveAt);
+    lines.push('最近一次瀏覽器自動保存：'+(b.getMonth()+1)+'/'+b.getDate()+' '+String(b.getHours()).padStart(2,'0')+':'+String(b.getMinutes()).padStart(2,'0')+'（'+(momMeta.lastStorageMode||'localStorage')+'）');
+  }
+  lines.push('這個版本已加上瀏覽器自動保存與備援暫存，但最穩定仍建議固定用 Safari 開同一個 GitHub Pages 網址。');
+  lines.push('不要清除 Safari/Chrome 網站資料，也不要只存在無痕模式。');
+  el.textContent=lines.join('\n');
+}
+function momSave(opts){
+  if(!momSaveBrowserBackup()){alert('儲存空間可能不足，照片太多時建議先匯出備份或改存文字。');return}
+  opts=opts||{};
+  if(opts.changed!==false)momTouchDirty();
+  momRenderBackupStatus();
+  if(opts.remind!==false)momMaybeRemindBackup();
+}
+function momLoad(){
+  try{
+    var raw=momLoadBrowserBackup();
+    if(!raw)return;
+    var s=JSON.parse(raw);
+    if(s&&Array.isArray(s.journal))momState=s;
+  }catch(e){}
+}
 function momTab(id,btn){document.querySelectorAll('.mom-panel').forEach(function(p){p.classList.remove('active')});document.querySelectorAll('.mom-tab').forEach(function(t){t.classList.remove('active')});document.getElementById('mom-panel-'+id).classList.add('active');if(btn)btn.classList.add('active');}
-function momRender(){momRenderSelects();momRenderJournal();momRenderExpenses();momRenderTodos();momRenderBuys();momUpdateSummary();}
+function momRender(){momRenderSelects();momRenderJournal();momRenderExpenses();momRenderTodos();momRenderBuys();momUpdateSummary();momRenderBackupStatus();}
 function momRenderSelects(){var sel=document.getElementById('mom-exp-date');if(!sel)return;sel.innerHTML=days.map(function(d,i){return '<option value="'+i+'">'+d.date+' '+esc(d.title)+'</option>'}).join('');}
-function momRenderJournal(){var wrap=document.getElementById('mom-journal-list');if(!wrap)return;wrap.innerHTML=momState.journal.map(function(j,i){return '<div class="mom-card"><div class="mom-day-head"><span class="mom-day-date">'+esc(j.date)+'</span><span class="mom-day-title">'+esc(j.title)+'</span></div><div class="mom-photo-box" onclick="momPickPhoto('+i+')">'+(j.photo?'<img src="'+j.photo+'">':'<div class="mom-photo-empty">📷<br>點一下加入今日照片</div>')+'</div><div class="mom-photo-actions"><button class="mom-btn" onclick="momPickPhoto('+i+')">拍照/換照片</button><button class="mom-btn secondary" onclick="momToggleBook('+i+')">'+(j.book?'⭐ 已加入相片書':'☆ 加入相片書')+'</button></div><textarea class="mom-textarea" placeholder="今天想記得的事、孩子說的話、排隊心得..." oninput="momState.journal['+i+'].text=this.value;momSave();momUpdateSummary()">'+esc(j.text||'')+'</textarea></div>'}).join('');}
+function momRenderJournal(){var wrap=document.getElementById('mom-journal-list');if(!wrap)return;wrap.innerHTML=momState.journal.map(function(j,i){return '<div class="mom-card"><div class="mom-day-head"><span class="mom-day-date">'+esc(j.date)+'</span><span class="mom-day-title">'+esc(j.title)+'</span></div><div class="mom-photo-box" onclick="momPickPhoto('+i+')">'+(j.photo?'<img src="'+j.photo+'">':'<div class="mom-photo-empty">📷<br>點一下加入今日照片</div>')+'</div><div class="mom-photo-actions"><button class="mom-btn" onclick="momPickPhoto('+i+')">拍照/換照片</button><button class="mom-btn secondary" onclick="momToggleBook('+i+')">'+(j.book?'⭐ 已加入相片書':'☆ 加入相片書')+'</button></div><textarea class="mom-textarea" placeholder="今天想記得的事、孩子說的話、排隊心得..." oninput="momState.journal['+i+'].text=this.value;momSave({remind:false});momUpdateSummary()">'+esc(j.text||'')+'</textarea></div>'}).join('');}
 function momPickPhoto(i){momPhotoTarget=i;document.getElementById('mom-photo-cap').click();}
-function momHandlePhoto(input){if(!input.files[0]&&momPhotoTarget===null)return;var reader=new FileReader();reader.onload=function(e){momState.journal[momPhotoTarget].photo=e.target.result;momPhotoTarget=null;momSave();momRenderJournal();momUpdateSummary();};reader.readAsDataURL(input.files[0]);input.value='';}
-function momToggleBook(i){momState.journal[i].book=!momState.journal[i].book;momSave();momRenderJournal();momUpdateSummary();}
-function momAddExpense(){var di=parseInt(document.getElementById('mom-exp-date').value)||0;var cat=document.getElementById('mom-exp-cat').value;var amount=parseInt(document.getElementById('mom-exp-amount').value)||0;var note=document.getElementById('mom-exp-note').value.trim();if(!amount&&!note)return;momState.expenses.unshift({date:days[di].date,cat:cat,amount:amount,note:note});document.getElementById('mom-exp-amount').value='';document.getElementById('mom-exp-note').value='';momSave();momRenderExpenses();momUpdateSummary();}
-function momRenderExpenses(){var wrap=document.getElementById('mom-exp-list');if(!wrap)return;var total=momState.expenses.reduce(function(a,e){return a+(parseInt(e.amount)||0)},0);document.getElementById('mom-exp-total').textContent='¥'+total.toLocaleString();wrap.innerHTML=momState.expenses.length?momState.expenses.map(function(e,i){return '<div class="mom-card"><div class="mom-row"><div class="mom-row-main"><div class="mom-row-title">'+esc(e.note||e.cat)+'</div><div class="mom-row-meta">'+esc(e.date)+'・'+esc(e.cat)+'</div></div><div class="mom-price">¥'+(parseInt(e.amount)||0).toLocaleString()+'</div><button class="mom-del" onclick="momState.expenses.splice('+i+',1);momSave();momRenderExpenses();momUpdateSummary()">刪除</button></div></div>'}).join(''):'<div class="mom-empty">還沒有花費紀錄</div>';}
+function momHandlePhoto(input){if(!input.files[0]&&momPhotoTarget===null)return;var reader=new FileReader();reader.onload=function(e){momState.journal[momPhotoTarget].photo=e.target.result;momPhotoTarget=null;momSave({remind:false});momRenderJournal();momUpdateSummary();};reader.readAsDataURL(input.files[0]);input.value='';}
+function momToggleBook(i){momState.journal[i].book=!momState.journal[i].book;momSave({remind:false});momRenderJournal();momUpdateSummary();}
+function momAddExpense(){var di=parseInt(document.getElementById('mom-exp-date').value)||0;var cat=document.getElementById('mom-exp-cat').value;var amount=parseInt(document.getElementById('mom-exp-amount').value)||0;var pay=document.getElementById('mom-exp-pay').value;var note=document.getElementById('mom-exp-note').value.trim();if(!amount&&!note)return;momState.expenses.unshift({date:days[di].date,cat:cat,amount:amount,payment:pay,note:note});document.getElementById('mom-exp-amount').value='';document.getElementById('mom-exp-note').value='';document.getElementById('mom-exp-pay').value='現金';momSave();momRenderExpenses();momUpdateSummary();}
+function momRenderExpenses(){var wrap=document.getElementById('mom-exp-list');if(!wrap)return;var total=momState.expenses.reduce(function(a,e){return a+(parseInt(e.amount)||0)},0);document.getElementById('mom-exp-total').textContent='¥'+total.toLocaleString();wrap.innerHTML=momState.expenses.length?momState.expenses.map(function(e,i){var pay=e.payment||'未填';return '<div class="mom-card"><div class="mom-row"><div class="mom-row-main"><div class="mom-row-title">'+esc(e.note||e.cat)+'</div><div class="mom-row-meta">'+esc(e.date)+'・'+esc(e.cat)+'・'+esc(pay)+'</div></div><div class="mom-price">¥'+(parseInt(e.amount)||0).toLocaleString()+'</div><button class="mom-del" onclick="momState.expenses.splice('+i+',1);momSave();momRenderExpenses();momUpdateSummary()">刪除</button></div></div>'}).join(''):'<div class="mom-empty">還沒有花費紀錄</div>';}
 function momAddTodo(){var stage=document.getElementById('mom-todo-stage').value;var text=document.getElementById('mom-todo-text').value.trim();if(!text)return;momState.todos.unshift({stage:stage,text:text,done:false});document.getElementById('mom-todo-text').value='';momSave();momRenderTodos();momUpdateSummary();}
 function momRenderTodos(){var wrap=document.getElementById('mom-todo-list');if(!wrap)return;wrap.innerHTML=momState.todos.length?momState.todos.map(function(t,i){return '<div class="mom-card"><div class="mom-row '+(t.done?'done':'')+'"><div class="mom-check '+(t.done?'done':'')+'" onclick="momState.todos['+i+'].done=!momState.todos['+i+'].done;momSave();momRenderTodos();momUpdateSummary()"></div><div class="mom-row-main"><div class="mom-row-title">'+esc(t.text)+'</div><div class="mom-row-meta">'+esc(t.stage)+'</div></div><button class="mom-del" onclick="momState.todos.splice('+i+',1);momSave();momRenderTodos();momUpdateSummary()">刪除</button></div></div>'}).join(''):'<div class="mom-empty">目前沒有待辦</div>';}
 function momAddBuy(){var name=document.getElementById('mom-buy-name').value.trim();var forWho=document.getElementById('mom-buy-for').value.trim();var place=document.getElementById('mom-buy-place').value.trim();var budget=parseInt(document.getElementById('mom-buy-budget').value)||0;if(!name)return;momState.buys.unshift({name:name,forWho:forWho,place:place,budget:budget,status:'想買'});['mom-buy-name','mom-buy-for','mom-buy-place','mom-buy-budget'].forEach(function(id){document.getElementById(id).value=''});momSave();momRenderBuys();}
 function momNextStatus(s){return s==='想買'?'已買':(s==='已買'?'放棄':'想買')}
 function momRenderBuys(){var wrap=document.getElementById('mom-buy-list');if(!wrap)return;wrap.innerHTML=momState.buys.length?momState.buys.map(function(b,i){var meta=[b.forWho?('給 '+b.forWho):'',b.place,b.budget?('預算 ¥'+b.budget.toLocaleString()):''].filter(Boolean).join('・');return '<div class="mom-card"><div class="mom-row"><div class="mom-row-main"><div class="mom-row-title">'+esc(b.name)+'</div><div class="mom-row-meta">'+esc(meta||'未填地點/對象')+'</div></div><button class="mom-btn secondary" onclick="momState.buys['+i+'].status=momNextStatus(momState.buys['+i+'].status);momSave();momRenderBuys()">'+esc(b.status)+'</button><button class="mom-del" onclick="momState.buys.splice('+i+',1);momSave();momRenderBuys()">刪除</button></div></div>'}).join(''):'<div class="mom-empty">還沒有購買清單</div>';}
 function momUpdateSummary(){if(!document.getElementById('mom-sum-photos'))return;var photoCount=momState.journal.filter(function(j){return !!j.photo||!!(j.text&&j.text.trim())}).length;var total=momState.expenses.reduce(function(a,e){return a+(parseInt(e.amount)||0)},0);var todoLeft=momState.todos.filter(function(t){return !t.done}).length;document.getElementById('mom-sum-photos').textContent=photoCount;document.getElementById('mom-sum-expense').textContent='¥'+total.toLocaleString();document.getElementById('mom-sum-todos').textContent=todoLeft;}
-function momExport(){var data=JSON.stringify(momState,null,2);var blob=new Blob([data],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mom_trip_notes_2026.json';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},300);}
+function momExport(){var data=JSON.stringify({version:2,exportedAt:new Date().toISOString(),momState:momState},null,2);var blob=new Blob([data],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mom_trip_notes_2026.json';document.body.appendChild(a);a.click();momBackupDone();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},300);}
 function momImportPick(){var input=document.getElementById('mom-backup-file');if(!input){alert('找不到匯入欄位，請重新下載最新版網頁。');return;}input.value='';input.click();}
 function momNormalizeImport(data){
   if(data&&data.momState)data=data.momState;
@@ -1415,7 +1523,7 @@ function momNormalizeImport(data){
     var found=oldJournal.find(function(j){return j&&j.date===d.date;})||oldJournal[idx]||{};
     return {date:d.date,title:d.title,text:found.text||'',photo:found.photo||null,book:!!found.book};
   });
-  next.expenses=Array.isArray(data.expenses)?data.expenses:[];
+  next.expenses=Array.isArray(data.expenses)?data.expenses.map(function(e){if(!e||typeof e!=='object')return e;return Object.assign({payment:'現金'},e);}):[];
   next.todos=Array.isArray(data.todos)?data.todos:[];
   next.buys=Array.isArray(data.buys)?data.buys:[];
   return next;
@@ -1431,7 +1539,8 @@ function momImport(input){
       var count=(next.expenses.length||0)+(next.todos.length||0)+(next.buys.length||0)+next.journal.filter(function(j){return !!j.photo||!!(j.text&&j.text.trim())}).length;
       if(!confirm('要用這份 JSON 備份還原媽媽筆記嗎？\n目前媽媽後台資料會被覆蓋。\n備份中可還原項目：約 '+count+' 筆'))return;
       momState=next;
-      momSave();
+      momSave({changed:false,remind:false});
+      momBackupDone();
       momRender();
       momTab('backup',document.querySelector('.mom-tab[onclick*=\"backup\"]'));
       alert('還原完成！');
@@ -1442,7 +1551,25 @@ function momImport(input){
   reader.onerror=function(){alert('讀取 JSON 檔案失敗，請確認檔案沒有損壞。');input.value='';};
   reader.readAsText(file,'utf-8');
 }
-function momResetConfirm(){if(confirm('確定要清空媽媽筆記嗎？孩子任務不會被清除。')){localStorage.removeItem(MOM_KEY);momState={journal:days.map(function(d){return {date:d.date,title:d.title,text:'',photo:null,book:false};}),expenses:[],todos:[],buys:[]};momRender();}}
+function momRestoreBrowserBackup(){
+  try{
+    var raw = localStorage.getItem(MOM_BROWSER_BACKUP_KEY) || localStorage.getItem(MOM_KEY) || sessionStorage.getItem(MOM_BROWSER_BACKUP_KEY);
+    if(!raw){ alert('找不到瀏覽器暫存資料。'); return; }
+    var next = momNormalizeImport(JSON.parse(raw));
+    if(!confirm('要用瀏覽器暫存資料覆蓋目前媽媽筆記嗎？')) return;
+    momState = next;
+    momSave({changed:false,remind:false});
+    momRender();
+    momTab('backup',document.querySelector('.mom-tab[onclick*="backup"]'));
+    alert('已從瀏覽器暫存還原。');
+  }catch(err){ alert('瀏覽器暫存還原失敗：'+(err&&err.message?err.message:err)); }
+}
+function momResetConfirm(){if(confirm('確定要清空媽媽筆記嗎？孩子任務不會被清除。')){localStorage.removeItem(MOM_KEY);localStorage.removeItem(MOM_BROWSER_BACKUP_KEY);try{sessionStorage.removeItem(MOM_BROWSER_BACKUP_KEY);}catch(e){}momState={journal:days.map(function(d){return {date:d.date,title:d.title,text:'',photo:null,book:false};}),expenses:[],todos:[],buys:[]};momMeta={dirtyCount:0,lastBackupAt:null,lastReminderAt:null,lastBrowserSaveAt:null,lastStorageMode:'localStorage'};momMetaSave();momRender();}}
+
+requestDurableStorage();
+window.addEventListener('pagehide', function(){ try{ saveState(); momSave({changed:false,remind:false}); }catch(e){} });
+document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='hidden'){ try{ saveState(); momSave({changed:false,remind:false}); }catch(e){} } });
+window.addEventListener('beforeunload', function(){ try{ saveState(); momSave({changed:false,remind:false}); }catch(e){} });
 
 // ── Weather ──
 var WMO = {
@@ -1587,7 +1714,7 @@ function loadWeather() {
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
-loadState();momLoad();buildHome();buildDays();buildBudget();loadWeather();renderXY();buildStamps();renderXF();updateXF();momRender();
+loadState();momMetaLoad();momLoad();buildHome();buildDays();buildBudget();loadWeather();renderXY();buildStamps();renderXF();updateXF();momRender();
 </script>
 
 <script>
